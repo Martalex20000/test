@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootNow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8e8d4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+        }
+        header {
+            background-color: #ff7f50;
+            color: white;
+            padding: 15px 20px;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border-bottom: 3px solid #d2691e;
+        }
+        .logo {
+            font-weight: bold;
+            margin: 0 20px;
+        }
+        .auth-buttons {
+            position: absolute;
+            right: 20px;
+        }
+        .auth-buttons a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            background-color: #d2691e;
+            padding: 7px 12px;
+            border-radius: 5px;
+        }
+        .auth-buttons a:hover {
+            background-color: #b44e1e;
+        }
+        .dark-mode-toggle {
+            position: absolute;
+            left: 20px;
+            width: 50px;
+            height: 25px;
+            background: #c44d21;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            cursor: pointer;
+            transition: background 0.5s ease-in-out;
+        }
+        .dark-mode-toggle .toggle-ball {
+            width: 20px;
+            height: 20px;
+            background: #d2691e;
+            border-radius: 50%;
+            transition: transform 0.5s ease-in-out;
+        }
+        .search-bar {
+            margin: 20px auto;
+            width: 80%;
+            max-width: 400px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #d2691e;
+        }
+        body.dark-mode {
+            background-color: #181825;
+            color: #cdd6f4;
+        }
+        body.dark-mode .dark-mode-toggle {
+            background: #475194;
+        }
+        body.dark-mode .dark-mode-toggle .toggle-ball {
+            transform: translateX(25px);
+            background: #3a3a4f;
+        }
+        body.dark-mode header, 
+        body.dark-mode footer {
+            background-color: #1e1e2e;
+            border-color: #444;
+        }
+        body.dark-mode .auth-buttons a {
+            background-color: #575268;
+        }
+        body.dark-mode .auth-buttons a:hover {
+            background-color: #b4befe;
+        }
+        footer {
+            background-color: #ff7f50;
+            color: white;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            border-top: 3px solid #d2691e;
+        }
+
+        /* Style pour les bulles de matchs */
+        .match-bubble {
+            background-color: #ff7f50;
+            color: white;
+            border-radius: 30px;
+            margin: 10px;
+            padding: 15px;
+            display: inline-block;
+            max-width: 200px;
+            text-align: left;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Style pour les bulles en mode nuit */
+        body.dark-mode .match-bubble {
+            background-color: #44475a; /* Couleur plus sombre pour le mode nuit */
+            color: #cdd6f4; /* Texte plus clair en mode nuit */
+        }
+
+        .match-bubble:hover {
+            background-color: #d2691e;
+        }
+        .match-bubble .teams {
+            font-weight: bold;
+        }
+        .match-bubble .score {
+            color: #f0e68c;
+        }
+        .match-bubble .timer {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+            <div class="toggle-ball"></div>
+        </div>
+        <div class="logo">FootNow</div>
+        <div class="auth-buttons">
+            <a href="#">Connexion / Inscription</a>
+        </div>
+    </header>
+    <div class="search-bar">
+        <input type="text" id="search" placeholder="Rechercher une équipe..." onkeyup="filterMatches()">
+    </div>
+    <div class="match-container" id="matches">Chargement des matchs...</div>
+    <footer>&copy; 2025 FootNow</footer>
+
+    <script>
+        // Fonction pour activer/désactiver le mode sombre
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        // Fonction pour récupérer les matchs avec cache local
+        function fetchMatches() {
+            const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+            const today = new Date().toISOString().split('T')[0];
+            const API_URL = `https://v3.football.api-sports.io/fixtures?date=${today}`;
+            const cacheKey = `matches-${today}`;
+
+            // Vérifier si les matchs sont déjà dans le cache
+            const cachedMatches = localStorage.getItem(cacheKey);
+            const cacheExpiration = localStorage.getItem(`${cacheKey}-expiration`);
+
+            if (cachedMatches && cacheExpiration && new Date().getTime() < cacheExpiration) {
+                // Si les données sont en cache et non expirées, les utiliser
+                displayMatches(JSON.parse(cachedMatches));
+            } else {
+                // Sinon, faire la requête API
+                fetch(API_URL, {
+                    method: "GET",
+                    headers: { "x-apisports-key": API_KEY }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Storer les résultats dans le cache pendant 1 heure
+                    const expirationTime = new Date().getTime() + 3600000; // 1 heure en millisecondes
+                    localStorage.setItem(cacheKey, JSON.stringify(data));
+                    localStorage.setItem(`${cacheKey}-expiration`, expirationTime);
+                    displayMatches(data);
+                })
+                .catch(error => {
+                    console.error("Erreur API:", error);
+                    document.getElementById("matches").innerHTML = "<p>Impossible de charger les matchs.</p>";
+                });
+            }
+        }
+
+        // Fonction pour afficher les matchs dans des bulles
+        function displayMatches(data) {
+            const matchesDiv = document.getElementById("matches");
+            matchesDiv.innerHTML = ""; // Clear previous results
+            if (data.response.length === 0) {
+                matchesDiv.innerHTML = "<p>Aucun match trouvé pour aujourd'hui.</p>";
+                return;
+            }
+            data.response.forEach(match => {
+                const matchElement = document.createElement("div");
+                matchElement.classList.add("match-bubble");
+
+                let status = match.fixture.status.long;
+                let score = `${match.goals.home ?? 0} - ${match.goals.away ?? 0}`;
+                let liveClass = status.includes("Live") ? "live" : "";
+                let timer = getTimeRemaining(match.fixture.date);
+
+                matchElement.innerHTML = `
+                    <div class="teams">${match.teams.home.name} vs ${match.teams.away.name}</div>
+                    <div class="score">${score}</div>
+                    <div class="timer ${liveClass}">${timer}</div>
+                `;
+                matchesDiv.appendChild(matchElement);
+            });
+        }
+
+        // Fonction pour afficher le temps restant avant le match
+        function getTimeRemaining(matchDate) {
+            const matchTime = new Date(matchDate).getTime();
+            const now = new Date().getTime();
+            const diff = matchTime - now;
+            if (diff <= 0) return "Match en direct";
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            return `Dans ${hours}h ${minutes}m`;
+        }
+
+        // Fonction pour filtrer les matchs
+        function filterMatches() {
+            let input = document.getElementById('search').value.toLowerCase();
+            let matches = document.querySelectorAll('.match-bubble');
+            matches.forEach(match => {
+                match.style.display = match.textContent.toLowerCase().includes(input) ? 'block' : 'none';
+            });
+        }
+
+        // Appeler la fonction pour récupérer les matchs
+        fetchMatches();
+    </script>
+</body>
+</html>
