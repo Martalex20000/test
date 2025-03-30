@@ -1,0 +1,16 @@
+
+{
+  "name": "FootNow",
+  "short_name": "FootNow",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8e8d4",
+  "theme_color": "#ff7f50",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

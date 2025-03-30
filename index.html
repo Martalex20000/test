@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FootNow</title>
+<style>
+    body.dark-mode .scroll-to-top {
+      background: #3a3a4f;
+      color: #cdd6f4;
+    }
+    body.dark-mode .scroll-to-top:hover {
+      background: #475194;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f8e8d4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+    }
+    header {
+      background-color: #ff7f50;
+      color: white;
+      padding: 15px 20px;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      border-bottom: 3px solid #d2691e;
+    }
+    .logo {
+      font-weight: bold;
+      margin: 0 20px;
+    }
+    .dark-mode-toggle {
+      position: absolute;
+      left: 20px;
+      width: 50px;
+      height: 25px;
+      background: #c44d21;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      cursor: pointer;
+      transition: background 0.5s ease-in-out;
+    }
+    .dark-mode-toggle .toggle-ball {
+      width: 20px;
+      height: 20px;
+      background: #d2691e;
+      border-radius: 50%;
+      transition: transform 0.5s ease-in-out;
+    }
+    .search-bar {
+      margin: 20px auto;
+      width: 80%;
+      max-width: 400px;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #d2691e;
+    }
+    .match-container {
+      margin-top: 20px;
+    }
+    .match-bubble {
+      background-color: #ff7f50;
+      color: white;
+      border-radius: 30px;
+      margin: 10px;
+      padding: 15px;
+      display: inline-block;
+      max-width: 200px;
+      text-align: left;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+    .match-bubble:hover {
+      background-color: #d2691e;
+      transform: scale(1.05);
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+      transition: all 0.3s ease-in-out;
+    }
+    .match-bubble img {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+      margin: 0 5px;
+      display: inline-block;
+    }
+    .match-bubble .match-details {
+      display: none;
+      font-size: 12px;
+      margin-top: 10px;
+      color: white;
+    }
+    .match-bubble.expanded .match-details {
+      display: block;
+    }
+    /* Pour "EN DIRECT", le texte est blanc sauf "EN DIRECT" animé en rouge */
+    .match-live {
+      color: white;
+      font-weight: bold;
+    }
+    .en-direct {
+      color: red;
+      animation: blink 1s infinite;
+    }
+    .match-live .elapsed-time {
+      color: white;
+      font-weight: normal;
+    }
+    .live-dot {
+      height: 8px;
+      width: 8px;
+      background-color: red;
+      border-radius: 50%;
+      display: inline-block;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    /* Pour la mi-temps, la mention est en rouge (sans animation) */
+    .mi-temps {
+      color: red;
+      font-weight: bold;
+    }
+    .match-finished {
+      color: black;
+      font-size: 12px;
+      font-weight: normal;
+    }
+    .match-upcoming {
+      color: #333;
+      font-weight: bold;
+    }
+    /* Couleur des compétitions : bleu clair et italique */
+    .competition {
+      color: #00ccff;
+      font-style: italic;
+    }
+    /* Mode nuit */
+    body.dark-mode {
+      background-color: #181825;
+      color: #cdd6f4;
+    }
+    body.dark-mode header {
+      background-color: #1e1e2e;
+      border-color: #444;
+    }
+    body.dark-mode .search-bar input {
+      background-color: #3a3a4f;
+      color: #cdd6f4;
+      border: 1px solid #575268;
+    }
+    body.dark-mode .match-bubble {
+      background-color: #44475a;
+      color: #cdd6f4;
+    }
+    body.dark-mode .dark-mode-toggle {
+      background: #475194;
+    }
+    body.dark-mode .dark-mode-toggle .toggle-ball {
+      transform: translateX(25px);
+      background: #3a3a4f;
+    }
+    .scroll-to-top {
+      position: fixed;
+      bottom: 5px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: #ff7f50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .scroll-to-top:hover {
+      background: #d2691e;
+    }
+  </style>
+<style>
+.match-bubble .details-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #fff6ee;
+  border-radius: 10px;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+.match-bubble.expanded .details-box {
+  display: block;
+}
+body.dark-mode .match-bubble .details-box {
+  background-color: #2c2c3a;
+  color: #cdd6f4;
+}
+</style><style>
+.prediction-box {
+  margin-top: 10px;
+  background: #f4d9be;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #333;
+}
+.match-bubble .details-box {
+  background: #f4d9be;
+  color: #333;
+}
+body.dark-mode .prediction-box {
+  background-color: #2c2c3a;
+  color: #cdd6f4;
+}
+body.dark-mode .details-box {
+  background-color: #2c2c3a;
+  color: #cdd6f4;
+}
+</style><style>
+.alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff5252;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+  display: none;
+  z-index: 9999;
+  animation: fadeInOut 4s ease-in-out forwards;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -20px); }
+  10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+</style>
+<link href="manifest.json" rel="manifest"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="FootNow" name="apple-mobile-web-app-title"/>
+<link href="icon.png" rel="apple-touch-icon"/>
+<meta content="#ff7f50" name="theme-color"/>
+</head>
+<body><div class="alert" id="alert"></div>
+<header>
+<div class="dark-mode-toggle" onclick="toggleDarkMode()">
+<div class="toggle-ball"></div>
+</div>
+<div class="logo"><a href="#" onclick="reloadPage()" style="text-decoration: none; color: inherit;">FootNow</a></div>
+</header>
+<div class="search-bar">
+<input id="search" onkeyup="filterMatches()" placeholder="Rechercher une équipe..." type="text"/>
+</div>
+<style>
+    .match-finished-container {
+        display: none; /* Caché par défaut */
+        background-color: #ddd;
+        padding: 10px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    .toggle-button {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #d2691e;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out;
+    }
+    body.dark-mode .match-finished-container {
+        background-color: #444; /* Adapté pour le mode sombre */
+    }
+</style>
+<button class="toggle-button" onclick="toggleFinishedMatches()">🔄 Voir les matchs terminés</button>
+<div class="match-finished-container" id="finished-matches">
+<h2>🏁 Matchs Terminés</h2>
+</div>
+<div class="match-container" id="matches">Chargement des matchs...</div>
+<style>
+        .toggle-button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #d2691e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
+        }
+        body.dark-mode .toggle-button {
+            background-color: #44475a;
+            color: #cdd6f4;
+        }
+    </style>
+<div class="match-container" id="finished-matches" style="margin-top: 20px;"></div>
+<button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()">⇧</button>
+<script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    }
+    function loadDarkMode() {
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+      }
+    }
+    async function fetchMatches() {
+      const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+      const today = new Date();
+      today.setHours(today.getHours() + 1);
+      const formattedDate = today.toISOString().split('T')[0];
+      const API_URL = `https://v3.football.api-sports.io/fixtures?date=${formattedDate}`;
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: { "x-apisports-key": API_KEY }
+        });
+        const data = await response.json();
+        displayMatches(data.response);
+      } catch (error) {
+        console.error("Erreur lors du chargement des matchs :", error);
+        document.getElementById("matches").innerHTML = `<p>Impossible de charger les matchs.</p>`;
+      }
+    }
+    
+    
+
+    function displayMatches(matches) {
+    
+      
+
+
+
+
+// Liste des compétitions à exclure
+const excludedKeywords = ["Women", "Féminin", "U18", "U19", "U20", "Youth", "Réserve", "B", "U21"];
+
+// Filtrer les matchs avant affichage
+matches = matches.filter(match => 
+    !excludedKeywords.some(keyword => match.league.name.includes(keyword))
+);
+
+
+// Trier les matchs par ordre alphabétique de la ligue
+
+
+matches.sort((a, b) => {
+    const bigLeagues = [
+        { name: "Premier League", country: "England" },
+        { name: "La Liga", country: "Spain" },
+        { name: "Serie A", country: "Italy" },
+        { name: "Bundesliga", country: "Germany" },
+        { name: "Ligue 1", country: "France" }
+    ];
+
+    let isBigLeagueA = bigLeagues.some(league => a.league.name === league.name && a.league.country === league.country);
+    let isBigLeagueB = bigLeagues.some(league => b.league.name === league.name && b.league.country === league.country);
+
+    if (isBigLeagueA && !isBigLeagueB) return -1;
+    if (!isBigLeagueA && isBigLeagueB) return 1;
+
+    return a.league.name.localeCompare(b.league.name);
+});
+
+
+
+
+
+
+
+
+      const matchesDiv = document.getElementById("matches");
+      matchesDiv.innerHTML = "";
+      if (matches.length === 0) {
+        matchesDiv.innerHTML = `<p>Aucun match aujourd'hui.</p>`;
+        return;
+      }
+      
+    matches.forEach(match => {
+        // --- nouvelle bulle
+    
+        let matchElement = document.createElement("div");
+        matchElement.classList.add("match-bubble");
+        matchElement.dataset.teams = `${match.teams.home.name.toLowerCase()} ${match.teams.away.name.toLowerCase()}`;
+        let matchTime = new Date(match.fixture.date);
+        let hours = matchTime.getHours().toString().padStart(2, "0");
+        let minutes = matchTime.getMinutes().toString().padStart(2, "0");
+        let status = match.fixture.status.short;
+        let statusDisplay = "";
+        if (["1H", "2H", "ET", "P", "BT"].includes(status)) {
+          let elapsedTime = match.fixture.status.elapsed;
+          let additionalTime = match.fixture.status.extra ?? 0;
+          let displayTime = additionalTime > 0 ? (elapsedTime > 45 ? `90+${additionalTime}'` : `45+${additionalTime}'`) : `${elapsedTime}'`;
+          statusDisplay = `<span class="match-live"><span class="live-dot"></span> <span class="en-direct">EN DIRECT</span> - ${displayTime}</span>`;
+        } else if (status === "HT") {
+          statusDisplay = `<span class="match-live"><span class="live-dot"></span> <span class="mi-temps">MI-TEMPS</span></span>`;
+        } else if (["FT", "AET", "PEN"].includes(status)) {
+          statusDisplay = `<span class="match-finished">Match Terminé</span>`;
+        } else {
+          let now = new Date().getTime();
+          let timeDiff = matchTime - now;
+          if (timeDiff > 0) {
+            let hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+            let minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            statusDisplay = `<span class="match-upcoming">Débute dans ${hoursLeft}h ${minutesLeft}m</span>`;
+          }
+        }
+        let competitionName = match.league.name;
+        if(match.league.country && match.league.country.toLowerCase() === "france" && competitionName.toLowerCase().includes("premier league")) {
+          competitionName = "Ligue 1";
+        }
+        let scoreDisplay = (status !== "NS") ? `<div class="score">${match.goals.home ?? 0} - ${match.goals.away ?? 0}</div>` : "";
+        matchElement.innerHTML = `
+          <div class="teams">
+            <img src="${match.teams.home.logo}" alt="${match.teams.home.name} logo">
+            ${match.teams.home.name} vs ${match.teams.away.name}
+            <img src="${match.teams.away.logo}" alt="${match.teams.away.name} logo">
+          </div>
+          <div class="competition">${competitionName}</div>
+          ${scoreDisplay}
+          <div class="timer">${statusDisplay}</div>
+        `;
+        if (["FT", "AET", "PEN"].includes(status)) {
+            document.getElementById("finished-matches").appendChild(matchElement);
+        } else {
+            
+        // Ajouter sous-bulle au clic
+        
+    matchElement.addEventListener("click", async () => {
+        const fixtureId = match.fixture.id;
+    
+            document.querySelectorAll(".match-bubble").forEach(b => {
+                if (b !== matchElement) b.classList.remove("expanded");
+            });
+
+            matchElement.classList.toggle("expanded");
+
+            if (!matchElement.querySelector(".details-box")) {
+                const details = document.createElement("div");
+                details.className = "details-box";
+                
+details.innerHTML = `
+  🏟️ <strong>Stade :</strong> ${match.fixture.venue?.name || 'Stade inconnu'}<br>
+  ${["1H", "2H", "ET", "P", "BT", "HT", "FT", "AET", "PEN"].includes(match.fixture.status.short) 
+    ? `⚽ <strong>Score :</strong> ${match.goals.home ?? 0} - ${match.goals.away ?? 0}` : ''}
+`;
+
+                matchElement.appendChild(details);
+
+        // Charger prédictions API
+        if (!matchElement.querySelector(".prediction-box")) {
+          const predBox = document.createElement("div");
+          predBox.className = "prediction-box";
+          predBox.innerText = "Chargement des prédictions...";
+          details.appendChild(predBox);
+
+          try {
+            const resp = await fetch(`https://v3.football.api-sports.io/predictions?fixture=${fixtureId}`, {
+              headers: { "x-apisports-key": "4a522875600e35c5c52ba1e27b9e5e25" }
+            });
+            const data = await resp.json();
+            if (!data.response || data.response.length === 0) {
+              predBox.innerText = "Pas de prédictions disponibles.";
+            } else {
+              const pred = data.response[0].predictions;
+              const advice = data.response[0].advice;
+              const winPercent = pred.percent;
+              predBox.innerHTML = `
+                🔮 <strong>Prédiction :</strong> ${pred.winner?.name ?? "Aucune"} (${pred.winner?.comment ?? ""})<br>
+                📊 <strong>Probabilités :</strong><br>
+                - ${data.response[0].teams.home.name} : ${winPercent.home}<br>
+                - Nul : ${winPercent.draw}<br>
+                - ${data.response[0].teams.away.name} : ${winPercent.away}<br>
+                💡 <em>${advice}</em>
+              `;
+            }
+          } catch (e) {
+            predBox.innerText = "Erreur lors du chargement des prédictions.";
+          }
+        }
+    
+            }
+        });
+
+        matchesDiv.appendChild(matchElement);
+    
+        }
+      });
+    }
+    async function fetchNextMatch(teamName) {
+      const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+      const TEAM_API_URL = `https://v3.football.api-sports.io/teams?search=${teamName}`;
+      try {
+        const teamResponse = await fetch(TEAM_API_URL, {
+          method: "GET",
+          headers: { "x-apisports-key": API_KEY }
+        });
+        const teamData = await teamResponse.json();
+        if (teamData.response.length > 0) {
+          const teamId = teamData.response[0].team.id;
+          const FIXTURES_API_URL = `https://v3.football.api-sports.io/fixtures?team=${teamId}&next=1`;
+          const fixtureResponse = await fetch(FIXTURES_API_URL, {
+            method: "GET",
+            headers: { "x-apisports-key": API_KEY }
+          });
+          const fixtureData = await fixtureResponse.json();
+          document.getElementById("matches").innerHTML = "";
+          if (fixtureData.response.length > 0) {
+            displayNextMatch(fixtureData.response[0]);
+          } else {
+            document.getElementById("matches").innerHTML = `<p>Aucun match prévu pour cette équipe.</p>`;
+          }
+        } else {
+          document.getElementById("matches").innerHTML = `<p>Équipe introuvable.</p>`;
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération du prochain match :", error);
+        document.getElementById("matches").innerHTML = `<p>Erreur lors de la récupération des données.</p>`;
+      }
+    }
+    function displayNextMatch(match) {
+      const matchesDiv = document.getElementById("matches");
+      matchesDiv.innerHTML = "";
+      let matchElement = document.createElement("div");
+      matchElement.classList.add("match-bubble");
+      let matchTime = new Date(match.fixture.date);
+      let hours = matchTime.getHours().toString().padStart(2, "0");
+      let minutes = matchTime.getMinutes().toString().padStart(2, "0");
+      matchElement.innerHTML = `
+        <div class="teams">
+          <img src="${match.teams.home.logo}" alt="${match.teams.home.name} logo">
+          ${match.teams.home.name} vs ${match.teams.away.name}
+          <img src="${match.teams.away.logo}" alt="${match.teams.away.name} logo">
+        </div>
+        <div class="competition">${match.league.name}</div>
+        <div class="timer">Prochain match : ${matchTime.toLocaleDateString()} à ${hours}:${minutes}</div>
+      `;
+      
+        // Ajouter sous-bulle au clic
+        
+    matchElement.addEventListener("click", async () => {
+        const fixtureId = match.fixture.id;
+    
+            document.querySelectorAll(".match-bubble").forEach(b => {
+                if (b !== matchElement) b.classList.remove("expanded");
+            });
+
+            matchElement.classList.toggle("expanded");
+
+            if (!matchElement.querySelector(".details-box")) {
+                const details = document.createElement("div");
+                details.className = "details-box";
+                
+details.innerHTML = `
+  🏟️ <strong>Stade :</strong> ${match.fixture.venue?.name || 'Stade inconnu'}<br>
+  ${["1H", "2H", "ET", "P", "BT", "HT", "FT", "AET", "PEN"].includes(match.fixture.status.short) 
+    ? `⚽ <strong>Score :</strong> ${match.goals.home ?? 0} - ${match.goals.away ?? 0}` : ''}
+`;
+
+                matchElement.appendChild(details);
+
+        // Charger prédictions API
+        if (!matchElement.querySelector(".prediction-box")) {
+          const predBox = document.createElement("div");
+          predBox.className = "prediction-box";
+          predBox.innerText = "Chargement des prédictions...";
+          details.appendChild(predBox);
+
+          try {
+            const resp = await fetch(`https://v3.football.api-sports.io/predictions?fixture=${fixtureId}`, {
+              headers: { "x-apisports-key": "4a522875600e35c5c52ba1e27b9e5e25" }
+            });
+            const data = await resp.json();
+            if (!data.response || data.response.length === 0) {
+              predBox.innerText = "Pas de prédictions disponibles.";
+            } else {
+              const pred = data.response[0].predictions;
+              const advice = data.response[0].advice;
+              const winPercent = pred.percent;
+              predBox.innerHTML = `
+                🔮 <strong>Prédiction :</strong> ${pred.winner?.name ?? "Aucune"} (${pred.winner?.comment ?? ""})<br>
+                📊 <strong>Probabilités :</strong><br>
+                - ${data.response[0].teams.home.name} : ${winPercent.home}<br>
+                - Nul : ${winPercent.draw}<br>
+                - ${data.response[0].teams.away.name} : ${winPercent.away}<br>
+                💡 <em>${advice}</em>
+              `;
+            }
+          } catch (e) {
+            predBox.innerText = "Erreur lors du chargement des prédictions.";
+          }
+        }
+    
+            }
+        });
+
+        matchesDiv.appendChild(matchElement);
+    
+    }
+    function filterMatches() {
+      let searchQuery = document.getElementById("search").value.toLowerCase().trim();
+      if (searchQuery === "") {
+        fetchMatches();
+      } else {
+        fetchNextMatch(searchQuery);
+      }
+    }
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.addEventListener('scroll', function() {
+      const scrollToTopButton = document.getElementById("scrollToTop");
+      if (window.scrollY > 200) {
+        scrollToTopButton.style.display = "flex";
+      } else {
+        scrollToTopButton.style.display = "none";
+      }
+    });
+    function reloadPage() {
+      location.reload();
+    }
+    loadDarkMode();
+    fetchMatches();
+  </script>
+<script>
+    async function fetchLineups(fixtureId) {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        const API_URL = `https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixtureId}`;
+        try {
+            const response = await fetch(API_URL, {
+                method: "GET",
+                headers: { "x-apisports-key": API_KEY }
+            });
+            const data = await response.json();
+            displayLineups(fixtureId, data.response);
+        } catch (error) {
+            document.getElementById(`details-${fixtureId}`).innerHTML = "<p>Impossible de récupérer la composition.</p>";
+        }
+    }
+
+    function displayLineups(fixtureId, lineups) {
+        let detailsDiv = document.getElementById(`details-${fixtureId}`);
+        if (!detailsDiv) return;
+        
+        if (lineups.length === 0) {
+            detailsDiv.innerHTML = "<p>Aucune composition disponible.</p>";
+        } else {
+            let lineupText = "<strong>Compositions :</strong><br>";
+            lineups.forEach(team => {
+                lineupText += `<strong>${team.team.name}</strong><br>${team.startXI.map(player => player.player.name).join(', ')}<br><br>`;
+            });
+            detailsDiv.innerHTML = lineupText;
+        }
+        detailsDiv.style.display = "block";
+    }
+
+    
+    function initializeMatchClicks() {
+        document.querySelectorAll(".match-bubble").forEach(matchBubble => {
+            matchBubble.addEventListener("click", function() {
+                const fixtureId = this.dataset.fixtureId;
+                if (!document.getElementById(`details-${fixtureId}`)) {
+                    let detailsDiv = document.createElement("div");
+                    detailsDiv.id = `details-${fixtureId}`;
+                    detailsDiv.classList.add("match-details");
+                    this.appendChild(detailsDiv);
+                }
+                fetchLineups(fixtureId);
+            });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initializeMatchClicks();
+    });
+
+    
+    
+
+    function displayMatches(matches) {
+    
+        const matchesDiv = document.getElementById("matches");
+        matchesDiv.innerHTML = "";
+        matches.forEach(match => {
+            let matchElement = document.createElement("div");
+            matchElement.classList.add("match-bubble");
+            matchElement.dataset.fixtureId = match.fixture.id;
+            matchElement.innerHTML = `
+                <div>${match.teams.home.name} vs ${match.teams.away.name}</div>
+                <div class="match-details" id="details-${match.fixture.id}"></div>
+            `;
+            matchesDiv.appendChild(matchElement);
+        });
+        initializeMatchClicks(); // Réinitialiser les événements de clic après affichage des matchs
+    }
+    
+        document.querySelectorAll(".match-bubble").forEach(matchBubble => {
+            matchBubble.addEventListener("click", function() {
+                const fixtureId = this.dataset.fixtureId;
+                if (!document.getElementById(`details-${fixtureId}`)) {
+                    let detailsDiv = document.createElement("div");
+                    detailsDiv.id = `details-${fixtureId}`;
+                    detailsDiv.classList.add("match-details");
+                    this.appendChild(detailsDiv);
+                }
+                fetchLineups(fixtureId);
+            });
+
+
+<script>
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    }
+
+    function loadDarkMode() {
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadDarkMode);
+</script>
+<script>
+    function updateLiveTimers() {
+        document.querySelectorAll(".match-live .elapsed-time").forEach(timer => {
+            let currentText = timer.innerText;
+            let matchTime = currentText.match(/(\d+)'(\d+)?/); // Extraire les minutes et secondes
+            if (matchTime) {
+                let minutes = parseInt(matchTime[1]);
+                let seconds = matchTime[2] ? parseInt(matchTime[2]) : 0;
+
+                seconds += 1; // Ajouter une seconde
+                if (seconds >= 60) {
+                    minutes += 1;
+                    seconds = 0;
+                }
+                timer.innerText = `${minutes}'${seconds.toString().padStart(2, "0")}`;
+            }
+        });
+    }
+
+    setInterval(updateLiveTimers, 1000); // Mettre à jour toutes les secondes
+</script>
+<script>
+    function updateLiveTimers() {
+        document.querySelectorAll(".match-live .elapsed-time").forEach(timer => {
+            let currentText = timer.innerText;
+            let matchTime = currentText.match(/(\d+)'(?:\s*(\d+))?/); // Extraire les minutes et secondes
+
+            if (matchTime) {
+                let minutes = parseInt(matchTime[1]);
+                let seconds = matchTime[2] ? parseInt(matchTime[2]) : 0;
+
+                seconds += 1; // Ajouter une seconde
+                if (seconds >= 60) {
+                    minutes += 1;
+                    seconds = 0;
+                }
+
+                timer.innerText = `${minutes}'${seconds.toString().padStart(2, "0")}`;
+            }
+        });
+    }
+
+    setInterval(updateLiveTimers, 1000); // Mettre à jour toutes les secondes
+</script>
+<script>
+    function updateLiveTimers() {
+        document.querySelectorAll(".match-live .elapsed-time").forEach(timer => {
+            let matchTime = timer.getAttribute("data-time"); // Utilisation d'un attribut pour suivre le temps
+
+            if (!matchTime) {
+                let initialText = timer.innerText.trim();
+                let match = initialText.match(/(\d+)'(\d+)?/);
+                if (match) {
+                    let minutes = parseInt(match[1]);
+                    let seconds = match[2] ? parseInt(match[2]) : 0;
+                    matchTime = `${minutes}:${seconds}`;
+                } else {
+                    matchTime = "0:00";
+                }
+                timer.setAttribute("data-time", matchTime);
+            }
+
+            let [minutes, seconds] = matchTime.split(":").map(Number);
+            seconds += 1;
+
+            if (seconds >= 60) {
+                minutes += 1;
+                seconds = 0;
+            }
+
+            timer.setAttribute("data-time", `${minutes}:${seconds}`);
+            timer.innerText = `${minutes}'${seconds.toString().padStart(2, "0")}`;
+        });
+    }
+
+    setInterval(updateLiveTimers, 1000); // Mettre à jour toutes les secondes
+</script>
+<script>
+    async function updateLiveTimersFromAPI() {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        const liveFixtures = document.querySelectorAll(".match-live");
+        
+        if (liveFixtures.length === 0) return; // Pas de matchs en direct
+
+        try {
+            const API_URL = `https://v3.football.api-sports.io/fixtures?live=all`;
+            const response = await fetch(API_URL, {
+                method: "GET",
+                headers: { "x-apisports-key": API_KEY }
+            });
+            const data = await response.json();
+
+            if (!data.response || data.response.length === 0) return;
+
+            data.response.forEach(match => {
+                let fixtureId = match.fixture.id;
+                let elapsedTime = match.fixture.status.elapsed || 0;
+                let additionalTime = match.fixture.status.extra || 0;
+                let seconds = new Date().getSeconds();
+
+                let timeDisplay = `${elapsedTime}'${seconds.toString().padStart(2, "0")}`;
+                let timerElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+
+                if (timerElement) {
+                    timerElement.innerText = timeDisplay;
+                }
+            });
+
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour des secondes depuis l'API :", error);
+        }
+    }
+
+    setInterval(updateLiveTimersFromAPI, 10000); // Mettre à jour toutes les 10 secondes
+</script>
+<script>
+    function updateLiveTimersFromAPI() {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        const liveFixtures = document.querySelectorAll(".match-live");
+
+        if (liveFixtures.length === 0) return;
+
+        fetch(`https://v3.football.api-sports.io/fixtures?live=all`, {
+            method: "GET",
+            headers: { "x-apisports-key": API_KEY }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.response || data.response.length === 0) return;
+
+            data.response.forEach(match => {
+                let fixtureId = match.fixture.id;
+                let elapsedTime = match.fixture.status.elapsed || 0;
+                let additionalTime = match.fixture.status.extra || 0;
+
+                let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+
+                if (matchElement) {
+                    matchElement.setAttribute("data-minutes", elapsedTime);
+                    matchElement.setAttribute("data-seconds", new Date().getSeconds());
+                }
+            });
+        })
+        .catch(error => console.error("Erreur lors de la mise à jour du temps :", error));
+    }
+
+    function startLocalTimer() {
+        setInterval(() => {
+            document.querySelectorAll(".match-live .elapsed-time").forEach(timer => {
+                let minutes = parseInt(timer.getAttribute("data-minutes")) || 0;
+                let seconds = parseInt(timer.getAttribute("data-seconds")) || 0;
+
+                seconds += 1;
+                if (seconds >= 60) {
+                    minutes += 1;
+                    seconds = 0;
+                }
+
+                timer.setAttribute("data-minutes", minutes);
+                timer.setAttribute("data-seconds", seconds);
+                timer.innerText = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+            });
+        }, 1000);
+    }
+
+    setInterval(updateLiveTimersFromAPI, 10000); // Rafraîchir les minutes via l'API toutes les 10s
+    startLocalTimer(); // Lancer le compteur des secondes localement
+</script>
+<script>
+    let matchTimers = {};
+
+    async function updateLiveTimersFromAPI() {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        try {
+            const response = await fetch(`https://v3.football.api-sports.io/fixtures?live=all`, {
+                method: "GET",
+                headers: { "x-apisports-key": API_KEY }
+            });
+            const data = await response.json();
+
+            if (!data.response || data.response.length === 0) return;
+
+            data.response.forEach(match => {
+                let fixtureId = match.fixture.id;
+                let elapsedTime = match.fixture.status.elapsed || 0;
+                let seconds = new Date().getSeconds();
+
+                matchTimers[fixtureId] = { minutes: elapsedTime, seconds: seconds };
+
+                let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+                if (matchElement) {
+                    matchElement.innerText = `${elapsedTime}:${seconds.toString().padStart(2, "0")}`;
+                }
+            });
+
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour des temps :", error);
+        }
+    }
+
+    function startLocalTimer() {
+        setInterval(() => {
+            Object.keys(matchTimers).forEach(fixtureId => {
+                let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+                if (!matchElement) return;
+
+                matchTimers[fixtureId].seconds += 1;
+                if (matchTimers[fixtureId].seconds >= 60) {
+                    matchTimers[fixtureId].minutes += 1;
+                    matchTimers[fixtureId].seconds = 0;
+                }
+
+                matchElement.innerText = `${matchTimers[fixtureId].minutes}:${matchTimers[fixtureId].seconds.toString().padStart(2, "0")}`;
+            });
+        }, 1000);
+    }
+
+    setInterval(updateLiveTimersFromAPI, 10000); // Rafraîchir les minutes depuis l'API toutes les 10 secondes
+    updateLiveTimersFromAPI(); // Chargement initial
+    startLocalTimer(); // Lancer l'incrémentation locale des secondes
+</script>
+<script>
+
+    async function updateLiveTimersFromAPI() {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        try {
+            const response = await fetch(`https://v3.football.api-sports.io/fixtures?live=all`, {
+                method: "GET",
+                headers: { "x-apisports-key": API_KEY }
+            });
+            const data = await response.json();
+
+            if (!data.response || data.response.length === 0) return;
+
+            data.response.forEach(match => {
+                let fixtureId = match.fixture.id;
+                let elapsedTime = match.fixture.status.elapsed || 0;
+                let additionalTime = match.fixture.status.extra || 0;
+                let seconds = new Date().getSeconds();
+
+                if (elapsedTime >= 90) {
+                    elapsedTime = `90'+${elapsedTime - 90}`; // Affichage en 90'+X
+                }
+
+                matchTimers[fixtureId] = { minutes: elapsedTime, seconds: seconds };
+
+                let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+                if (matchElement) {
+                    matchElement.innerText = `${elapsedTime}:${seconds.toString().padStart(2, "0")}`;
+                }
+            });
+
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour du temps :", error);
+        }
+    }
+
+    function startLocalTimer() {
+        setInterval(() => {
+            Object.keys(matchTimers).forEach(fixtureId => {
+                let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+                if (!matchElement) return;
+
+                let currentTime = matchTimers[fixtureId].minutes;
+                let seconds = matchTimers[fixtureId].seconds + 1;
+
+                if (typeof currentTime === "string" && currentTime.includes("90'+")) {
+                    let extraMinutes = parseInt(currentTime.split("'")[1]) || 0;
+                    if (seconds >= 60) {
+                        extraMinutes += 1;
+                        seconds = 0;
+                    }
+                    matchTimers[fixtureId].minutes = `90'+${extraMinutes}`;
+                } else {
+                    let minutes = parseInt(currentTime);
+                    if (seconds >= 60) {
+                        minutes += 1;
+                        seconds = 0;
+                    }
+                    matchTimers[fixtureId].minutes = minutes >= 90 ? `90'+${minutes - 90}` : minutes;
+                }
+
+                matchTimers[fixtureId].seconds = seconds;
+                matchElement.innerText = `${matchTimers[fixtureId].minutes}:${seconds.toString().padStart(2, "0")}`;
+            });
+        }, 1000);
+    }
+
+    setInterval(updateLiveTimersFromAPI, 10000); // Rafraîchir les minutes depuis l'API toutes les 10 secondes
+    updateLiveTimersFromAPI(); // Chargement initial
+    startLocalTimer(); // Lancer l'incrémentation locale des secondes
+</script>
+<script>
+
+    async function updateLiveTimersFromAPI() {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        try {
+            const response = await fetch(`https://v3.football.api-sports.io/fixtures?live=all`, {
+                method: "GET",
+                headers: { "x-apisports-key": API_KEY }
+            });
+            const data = await response.json();
+
+            if (!data.response || data.response.length === 0) return;
+
+            data.response.forEach(match => {
+                let fixtureId = match.fixture.id;
+                let elapsedTime = match.fixture.status.elapsed || 0;
+                let seconds = new Date().getSeconds();
+
+                matchTimers[fixtureId] = { minutes: elapsedTime, seconds: seconds };
+
+                let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+                if (matchElement) {
+                    matchElement.setAttribute("data-fixture-id", fixtureId);
+                    matchElement.setAttribute("data-minutes", elapsedTime);
+                    matchElement.setAttribute("data-seconds", seconds);
+                    matchElement.innerText = formatMatchTime(elapsedTime, seconds);
+                }
+            });
+
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour du temps :", error);
+        }
+    }
+
+    function formatMatchTime(minutes, seconds) {
+        if (minutes >= 90) {
+            let extraMinutes = minutes - 90;
+            return `90'+${extraMinutes}:${seconds.toString().padStart(2, "0")}`;
+        } else {
+            return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+        }
+    }
+
+    function startLocalTimer() {
+        setInterval(() => {
+            document.querySelectorAll(".match-live .elapsed-time").forEach(timer => {
+                let fixtureId = timer.getAttribute("data-fixture-id");
+                if (!fixtureId || !matchTimers[fixtureId]) return;
+
+                matchTimers[fixtureId].seconds += 1;
+                if (matchTimers[fixtureId].seconds >= 60) {
+                    matchTimers[fixtureId].minutes += 1;
+                    matchTimers[fixtureId].seconds = 0;
+                }
+
+                timer.innerText = formatMatchTime(matchTimers[fixtureId].minutes, matchTimers[fixtureId].seconds);
+            });
+        }, 1000);
+    }
+
+    setInterval(updateLiveTimersFromAPI, 10000); // Limiter les appels API à toutes les 10 secondes
+    updateLiveTimersFromAPI(); // Chargement initial
+    startLocalTimer(); // Lancer l'incrémentation locale des secondes
+</script>
+<script>
+    let lastAPIFetch = 0;
+
+    async function updateLiveTimersFromAPI() {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        const now = Date.now();
+
+        // Ne pas appeler l'API si elle a été appelée il y a moins de 10 secondes
+        if (now - lastAPIFetch < 10000) {
+            console.log("⏳ Attente avant le prochain appel API...");
+            return;
+        }
+
+        lastAPIFetch = now; // Mettre à jour le dernier appel API
+
+        try {
+            const response = await fetch(`https://v3.football.api-sports.io/fixtures?live=all`, {
+                method: "GET",
+                headers: { "x-apisports-key": API_KEY }
+            });
+            const data = await response.json();
+
+            if (!data.response || data.response.length === 0) {
+                console.log("Aucun match en direct trouvé.");
+                return;
+            }
+
+            data.response.forEach(match => {
+                let fixtureId = match.fixture.id;
+                let elapsedTime = match.fixture.status.elapsed || 0;
+
+                // Stocker le temps sans répéter les requêtes inutiles
+                if (!matchTimers[fixtureId] || matchTimers[fixtureId].minutes !== elapsedTime) {
+                    matchTimers[fixtureId] = { minutes: elapsedTime, seconds: 0 };
+                    let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+                    if (matchElement) {
+                        matchElement.innerText = formatMatchTime(elapsedTime, 0);
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour du temps depuis l'API :", error);
+        }
+    }
+
+    function formatMatchTime(minutes, seconds) {
+        if (minutes >= 90) {
+            let extraMinutes = minutes - 90;
+            return `90'+${extraMinutes}:${seconds.toString().padStart(2, "0")}`;
+        } else {
+            return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+        }
+    }
+
+    function startLocalTimer() {
+        setInterval(() => {
+            Object.keys(matchTimers).forEach(fixtureId => {
+                let matchElement = document.querySelector(`.match-bubble[data-fixture-id='${fixtureId}'] .elapsed-time`);
+                if (!matchElement) return;
+
+                matchTimers[fixtureId].seconds += 1;
+                if (matchTimers[fixtureId].seconds >= 60) {
+                    matchTimers[fixtureId].minutes += 1;
+                    matchTimers[fixtureId].seconds = 0;
+                }
+
+                matchElement.innerText = formatMatchTime(matchTimers[fixtureId].minutes, matchTimers[fixtureId].seconds);
+            });
+        }, 1000);
+    }
+
+    setInterval(updateLiveTimersFromAPI, 10000); // Vérifier toutes les 10 secondes, mais éviter les appels répétés
+    updateLiveTimersFromAPI(); // Chargement initial
+    startLocalTimer(); // Lancer l'incrémentation locale des secondes
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".match-bubble").forEach(match => {
+            match.addEventListener("click", async function () {
+                let fixtureId = this.getAttribute("data-fixture-id");
+                let existingContainer = document.querySelector(`.lineup-container[data-fixture-id='${fixtureId}']`);
+
+                if (!existingContainer) {
+                    let lineupContainer = document.createElement("div");
+                    lineupContainer.className = "lineup-container";
+                    lineupContainer.setAttribute("data-fixture-id", fixtureId);
+                    lineupContainer.innerHTML = "<p style='color: white;'>Chargement des compositions...</p>";
+                    this.parentNode.insertBefore(lineupContainer, this.nextSibling);
+
+                    await fetchLineups(fixtureId, lineupContainer);
+                } else {
+                    existingContainer.style.display = existingContainer.style.display === "block" ? "none" : "block";
+                }
+            });
+        });
+    });
+
+    async function fetchLineups(fixtureId, container) {
+        const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+        const API_URL = `https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixtureId}`;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "GET",
+                headers: { "x-apisports-key": API_KEY }
+            });
+            const data = await response.json();
+
+            if (!data.response || data.response.length === 0) {
+                container.innerHTML = "<p style='color: white;'>Les compositions ne sont pas disponibles pour ce match.</p>";
+                container.style.display = "block";
+                return;
+            }
+
+            container.innerHTML = ""; // Vider l'ancien contenu
+
+            data.response.forEach(team => {
+                let lineupHTML = `<div class="team-lineup"><h3>${team.team.name}</h3><ul>`;
+                team.startXI.forEach(player => {
+                    lineupHTML += `<li>${player.player.name} (${player.player.number})</li>`;
+                });
+                lineupHTML += `</ul></div>`;
+                container.innerHTML += lineupHTML;
+            });
+
+            container.style.display = "block"; // Afficher la composition
+
+        } catch (error) {
+            console.error("Erreur lors du chargement des compositions :", error);
+            container.innerHTML = "<p style='color: red;'>Erreur lors du chargement des compositions.</p>";
+            container.style.display = "block";
+        }
+    }
+</script>
+<script>
+    function toggleFinishedMatches() {
+        const finishedMatches = document.getElementById("finished-matches");
+        if (finishedMatches.style.display === "none") {
+            finishedMatches.style.display = "block";
+        } else {
+            finishedMatches.style.display = "none";
+        }
+    }
+
+    function moveFinishedMatches() {
+        const finishedContainer = document.getElementById("finished-matches");
+        document.querySelectorAll(".match-bubble").forEach(matchBubble => {
+            let statusText = matchBubble.querySelector(".match-finished");
+            if (statusText) {
+                finishedContainer.appendChild(matchBubble);
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(moveFinishedMatches, 1000); // Déplacer les matchs terminés après chargement
+    });
+</script>
+<script>
+const API_KEY = "4a522875600e35c5c52ba1e27b9e5e25";
+let previousScores = {};
+let notifiedStatuses = {};
+
+function showGoalAlert(message) {
+  const alertBox = document.getElementById("alert");
+  alertBox.innerText = message;
+  alertBox.style.display = "block";
+  setTimeout(() => {
+    alertBox.style.display = "none";
+  }, 4000);
+}
+
+async function checkGoals() {
+  try {
+    const response = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
+      headers: { "x-apisports-key": API_KEY }
+    });
+    const data = await response.json();
+
+    if (!data.response) return;
+
+    data.response.forEach(match => {
+      const id = match.fixture.id;
+      const home = match.teams.home.name;
+      const away = match.teams.away.name;
+      const goals = `${match.goals.home}-${match.goals.away}`;
+      const status = match.fixture.status.short;
+
+      // But
+      if (previousScores[id] && previousScores[id] !== goals) {
+        const goalDiff = parseInt(match.goals.home) > parseInt(previousScores[id].split('-')[0])
+          ? home : away;
+        showGoalAlert(`⚽ But pour ${goalDiff} (${goals})`);
+      }
+      previousScores[id] = goals;
+
+      // Mi-temps
+      if (status === "HT" && !notifiedStatuses[id + "_HT"]) {
+        showGoalAlert(`⏸️ Mi-temps dans ${home} vs ${away}`);
+        notifiedStatuses[id + "_HT"] = true;
+      }
+
+      // Fin de match
+      if (status === "FT" && !notifiedStatuses[id + "_FT"]) {
+        showGoalAlert(`🏁 Fin du match : ${home} vs ${away}`);
+        notifiedStatuses[id + "_FT"] = true;
+      }
+    });
+  } catch (err) {
+    console.error("Erreur API but :", err);
+  }
+}
+
+setInterval(checkGoals, 10000);
+checkGoals();
+</script></body>
+</html>
